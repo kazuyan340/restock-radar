@@ -3,8 +3,8 @@
 // Link exist. Safe to keep in client-side code: the Supabase key here must
 // be the "anon" key (RLS-protected), never the service_role key, and the
 // VAPID key here must be the *public* key.
-const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+const SUPABASE_URL = "https://xmdzzsmcuifgwmmwhvri.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_p4hfUMTbSwZHrnzDosODTg_gcTd5in_";
 const VAPID_PUBLIC_KEY = "BPSyum_Fd4i8fxvwQ0u-OAkVI7ralCHqXMUCPQtnHEtqpP9cqwAmcFGssGCL3m6zk9QO8N1-VeL47Pu8hmoFf00";
 const STRIPE_PAYMENT_LINK_URL = "https://buy.stripe.com/YOUR-PAYMENT-LINK";
 const FREE_TIER_LIMIT = 3;
