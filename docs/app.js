@@ -6,7 +6,7 @@
 const SUPABASE_URL = "https://hebnnwypbrdlhxuscjfp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_PMkG7hHV-8RCDTdRD_MVDQ_6Yo4n5Ds";
 const VAPID_PUBLIC_KEY = "BPSyum_Fd4i8fxvwQ0u-OAkVI7ralCHqXMUCPQtnHEtqpP9cqwAmcFGssGCL3m6zk9QO8N1-VeL47Pu8hmoFf00";
-const STRIPE_PAYMENT_LINK_URL = "https://buy.stripe.com/YOUR-PAYMENT-LINK";
+const STRIPE_PAYMENT_LINK_URL = "https://buy.stripe.com/test_14A9AV5S7bmQ1oX64m14400";
 const FREE_TIER_LIMIT = 3;
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
