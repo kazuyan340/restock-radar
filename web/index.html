@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>在庫レーダー</title>
+  <meta name="description" content="売り切れ商品の在庫復活をプッシュ通知でお知らせします" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <meta name="theme-color" content="#14161d" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main>
+    <header class="app-header">
+      <h1>🔔 在庫レーダー</h1>
+      <p>売り切れ商品が復活したら、すぐにお知らせします</p>
+      <button class="ghost history-link" id="history-toggle-button">📜 通知履歴を見る</button>
+    </header>
+
+    <form class="card add-form" id="add-form">
+      <input
+        type="url"
+        id="url-input"
+        placeholder="商品ページのURLを貼り付け"
+        required
+        autocomplete="off"
+      />
+      <button type="submit" class="primary" id="add-button">追加</button>
+    </form>
+
+    <div class="banner" id="notify-banner" hidden>
+      <span>通知を有効にすると、在庫復活をすぐ受け取れます</span>
+      <button class="ghost" id="enable-notify-button">通知を有効にする</button>
+    </div>
+
+    <div class="banner" id="test-notify-banner" hidden>
+      <span>通知は有効です</span>
+      <button class="ghost" id="test-notify-button">テスト通知を送る</button>
+    </div>
+
+    <div class="banner" id="limit-banner" hidden>
+      <span><strong id="limit-count">0</strong> / 3件（無料枠）</span>
+      <button class="ghost" id="upgrade-button">プレミアムにする</button>
+    </div>
+
+    <section class="item-list" id="item-list"></section>
+
+    <div class="empty-state" id="empty-state" hidden>
+      <span class="icon">📦</span>
+      商品を登録すると、ここに表示されます
+    </div>
+
+    <section class="card" id="history-section" hidden>
+      <div class="history-header">
+        <h2>通知履歴</h2>
+        <button class="ghost" id="close-history-button">閉じる</button>
+      </div>
+      <div id="history-list"></div>
+      <p class="empty-state" id="history-empty" hidden>まだ通知はありません</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="paywall-modal" hidden>
+    <div class="modal">
+      <h2>無料枠の上限です</h2>
+      <p>
+        無料プランでは商品を3件まで登録できます。<br />
+        プレミアムにアップグレードすると、件数無制限で登録できます。
+      </p>
+      <div class="modal-actions">
+        <button class="primary" id="paywall-upgrade-button">プレミアムにアップグレード</button>
+        <button class="ghost" id="paywall-close-button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+from __future__ import annotations
+
+from .base import Parser, StockResult, extract_json_ld_stock, soup_of
+from .generic_fallback import GenericFallbackParser
+
+_NEGATIVE_AVAILABILITY_SIGNALS = ["在庫切れ", "現在お取り扱いできません", "販売、発送は行っておりません"]
+_POSITIVE_AVAILABILITY_SIGNALS = ["在庫あり", "残り", "通常配送無料"]
+
+_fallback = GenericFallbackParser()
+
+
+class AmazonParser(Parser):
+    """Amazon.co.jp product page parser.
+
+    Amazon rarely emits reliable Product/Offer JSON-LD, so after trying that
+    (cheap, and correct when present), the primary signal is the
+    #availability element — an id (not a hashed class) that has been stable
+    on Amazon product pages for years.
+    """
+
+    def parse(self, html: str) -> StockResult:
+        soup = soup_of(html)
+
+        json_ld_result = extract_json_ld_stock(soup)
+        if json_ld_result is not None:
+            return json_ld_result
+
+        availability = soup.select_one("#availability")
+        if availability is not None:
+            text = availability.get_text(separator=" ").strip()
+            if any(signal in text for signal in _NEGATIVE_AVAILABILITY_SIGNALS):
+                return StockResult(status="sold_out", product_name=_product_name(soup))
+            if any(signal in text for signal in _POSITIVE_AVAILABILITY_SIGNALS):
+                return StockResult(status="in_stock", product_name=_product_name(soup))
+
+        return _fallback.parse(html)
+
+
+def _product_name(soup) -> str | None:
+    title = soup.select_one("#productTitle")
+    return title.get_text(strip=True) if title is not None else None

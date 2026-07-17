@@ -1,0 +1,16 @@
+# secrets - never commit
+worker/private_key.pem
+worker/vapid_keys.local.txt
+worker/.env
+.env
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# supabase local dev
+supabase/.branches/
+supabase/.temp/
