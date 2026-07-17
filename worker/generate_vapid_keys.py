@@ -41,7 +41,7 @@ def main() -> None:
     print("    Supabase secrets set VAPID_PRIVATE_KEY_RAW=... で設定） ===")
     print(_b64url(raw_private))
 
-    print("=== VAPID_PUBLIC_KEY（web/app.jsのVAPID_PUBLIC_KEYと、")
+    print("=== VAPID_PUBLIC_KEY（docs/app.jsのVAPID_PUBLIC_KEYと、")
     print("    send-test-notification Edge Functionの両方で使用） ===")
     print(_b64url(raw_public))
 

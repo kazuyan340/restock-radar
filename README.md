@@ -7,57 +7,41 @@
 ```
 restock-radar/
   worker/        在庫監視バッチ（Python、GitHub Actionsのcronで定期実行）
-  web/           PWA本体（素のHTML/CSS/JS、GitHub Pagesで公開）
+  docs/          PWA本体（素のHTML/CSS/JS、GitHub Pagesで公開）
+                 ※フォルダ名がdocsなのはGitHub Pagesの制約のため（後述）。中身はWebアプリそのもの
   supabase/
     migrations/  DBスキーマ
     functions/   Stripe決済Webhook・テスト通知送信（Supabase Edge Functions）
   .github/workflows/monitor.yml   定期監視の自動実行設定
 ```
 
+**フォルダ名について:** 当初`web/`という名前だったが、GitHub Pagesの「Deploy from a branch」機能はフォルダとして`/`（ルート）か`/docs`しか選べない仕様だったため、`docs/`にリネームした。中身はドキュメントではなくWebアプリ本体。
+
 技術選定の背景や検討過程は `C:\Users\kazuya.tohara\.claude\plans\woolly-orbiting-wirth.md` を参照。
 
 ## 現在の状態
 
-コード本体はローカルで書き終わっている。**VAPID鍵はネットワーク不要で生成済み**（`python worker/generate_vapid_keys.py`、`cryptography`パッケージのみで完結するためWi-Fi不要だった）。公開鍵は`web/app.js`の`VAPID_PUBLIC_KEY`に反映済み。秘密鍵は`worker/private_key.pem`と`worker/vapid_keys.local.txt`に保存済み（どちらも`.gitignore`済み、後述のSecrets設定で使う）。
+コード本体はローカルで書き終わっている。**VAPID鍵はネットワーク不要で生成済み**（`python worker/generate_vapid_keys.py`、`cryptography`パッケージのみで完結するためWi-Fi不要だった）。公開鍵は`docs/app.js`の`VAPID_PUBLIC_KEY`に反映済み。秘密鍵は`worker/private_key.pem`と`worker/vapid_keys.local.txt`に保存済み（どちらも`.gitignore`済み、後述のSecrets設定で使う）。
 
-**Gitは別途インストール不要。Sourcetree同梱のgitを使ってローカルの`git init`・初回コミットまで完了済み**（`C:\Users\kazuya.tohara\AppData\Local\Atlassian\SourceTree\git_local\bin\git.exe`。PowerShellで使うにはこのフォルダをPATHに追加するか、Sourcetree GUIから直接操作する）。
+**Gitは別途インストール不要。Sourcetree同梱のgitを使ってローカルの`git init`・初回コミット・GitHubへのpushまで完了済み**（`C:\Users\kazuya.tohara\AppData\Local\Atlassian\SourceTree\git_local\bin\git.exe`。PowerShellで使うにはこのフォルダをPATHに追加するか、Sourcetree GUIから直接操作する）。リポジトリ: `https://github.com/kazuyan340/restock-radar`
 
-以下の**ネットワークが必要な作業が未着手**（会社Wi-Fi環境のため保留中）:
+以下の**ネットワークが必要な作業が未着手**:
 
-1. GitHubリポジトリの作成・公開（`git remote add` → `git push`）
-2. Python依存パッケージのインストール（`pip install -r worker/requirements.txt`）
+1. GitHub Pagesを有効化（Source: Deploy from a branch、Branch: `main` / `/docs`）
+2. Python依存パッケージのインストール（`pip install -r worker/requirements.txt`）— **完了済み**、pytest 14件全てpass
 3. Supabaseプロジェクトの作成
 4. Stripeの商品・決済リンク設定
 5. `send-test-notification` Edge Functionのデプロイ
 
-## セットアップ手順（Wi-Fiが使える環境で）
+## セットアップ手順
 
-### 1. GitHubにリポジトリを作成してpush
+### 1. GitHubリポジトリ / push
 
-Gitは導入済み（Sourcetree同梱、`git init`・初回コミットも完了済み）。GitHubで**public**リポジトリを作成し、リモートを追加してpushするだけでよい。
-
-```powershell
-$env:PATH = "C:\Users\kazuya.tohara\AppData\Local\Atlassian\SourceTree\git_local\bin;" + $env:PATH
-git remote add origin <GitHubで作成したリポジトリのURL>
-git branch -M main
-git push -u origin main
-```
-
-（Sourcetree GUIから「リモートを追加」→「プッシュ」で操作しても同じ。GUIの方が楽ならそちらを使う。）
-
-publicにする理由: GitHub ActionsのCI時間が無料枠無制限になるため。ワーカーのコード自体に機密情報は含まれない。秘密情報はすべてGitHub Secretsで管理する。
+完了済み。`https://github.com/kazuyan340/restock-radar` にpush済み。
 
 ### 2. Python依存パッケージのインストール
 
-```powershell
-cd worker
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-pytest tests/
-```
-
-`test_parsers.py` が全件パスすることを確認する（ネットワーク不要、保存済みHTMLフィクスチャでテスト）。
+完了済み（`worker/.venv`に仮想環境作成、`pytest tests/`で14件全てpass確認済み）。
 
 ### 3. VAPID鍵をSecretsに登録（鍵自体はすでに生成済み）
 
@@ -65,7 +49,7 @@ pytest tests/
 
 - `worker/private_key.pem` の中身 → GitHubリポジトリの Settings → Secrets and variables → Actions で `VAPID_PRIVATE_KEY_PEM` として登録
 - `VAPID_PRIVATE_KEY_RAW`の値 → Supabase secrets（後述のstep 7で`send-test-notification`用に設定）
-- `VAPID_PUBLIC_KEY`の値 → すでに`web/app.js`に反映済み。Supabase secretsにも同じ値を`VAPID_PUBLIC_KEY`として設定する
+- `VAPID_PUBLIC_KEY`の値 → すでに`docs/app.js`に反映済み。Supabase secretsにも同じ値を`VAPID_PUBLIC_KEY`として設定する
 
 あわせて `VAPID_SUBJECT`（例: `mailto:kazuyan.no.7@gmail.com`）をGitHub SecretsとSupabase secrets両方に登録する。
 
@@ -75,20 +59,20 @@ pytest tests/
 2. SQL Editorで `supabase/migrations/0001_init.sql` の内容を実行
 3. Authentication → Providers → Anonymous Sign-ins を有効化
 4. Project Settings → API から以下を控える:
-   - Project URL → `web/app.js` の `SUPABASE_URL`
-   - `anon` `public` key → `web/app.js` の `SUPABASE_ANON_KEY`
+   - Project URL → `docs/app.js` の `SUPABASE_URL`
+   - `anon` `public` key → `docs/app.js` の `SUPABASE_ANON_KEY`
    - `service_role` key → GitHub Secretsの `SUPABASE_SERVICE_ROLE_KEY`（**絶対にブラウザ側コードに書かない**）
 5. GitHub Secretsに `SUPABASE_URL` も登録
 
 ### 5. GitHub Pagesを有効化
 
-リポジトリの Settings → Pages → Source を「Deploy from a branch」、Branch を `main` / `/web` に設定。ビルド不要なのでこれだけで公開される。
+リポジトリの Settings → Pages → Source を「Deploy from a branch」、Branch を `main` / `/docs` に設定。ビルド不要なのでこれだけで公開される。公開URLは `https://kazuyan340.github.io/restock-radar/` になる。
 
 ### 6. Stripeを設定（テストモードから）
 
 1. [Stripe Dashboard](https://dashboard.stripe.com/) で商品「プレミアムアップグレード」を作成し、買い切り価格を設定（初期価格は**1,980円**。利用実績が増えたら2,980円→3,980円と段階的値上げを検討）
-2. その商品の **Payment Link** を作成し、成功時リダイレクト先を `https://<GitHubユーザー名>.github.io/restock-radar/?upgraded=1` に設定
-3. 作成したPayment LinkのURLを `web/app.js` の `STRIPE_PAYMENT_LINK_URL` に設定
+2. その商品の **Payment Link** を作成し、成功時リダイレクト先を `https://kazuyan340.github.io/restock-radar/?upgraded=1` に設定
+3. 作成したPayment LinkのURLを `docs/app.js` の `STRIPE_PAYMENT_LINK_URL` に設定
 4. Supabase CLIで Edge Function をデプロイ:
    ```powershell
    supabase functions deploy stripe-webhook --no-verify-jwt
@@ -113,7 +97,7 @@ supabase secrets set VAPID_SUBJECT=mailto:kazuyan.no.7@gmail.com
 
 ### 8. 動作確認の順番
 
-1. `web/`をローカルで配信して通知購読が動くか確認: `cd web; python -m http.server 8000`
+1. `docs/`をローカルで配信して通知購読が動くか確認: `cd docs; python -m http.server 8000`
 2. 購読情報が`devices.web_push_subscription`に保存されたら、まず「テスト通知を送る」ボタンで疎通確認（実際のスクレイピングを待たずにWeb Push配信経路だけ確認できる）
 3. 続けて`worker/main.py`をローカルで一度実行し、実際の在庫チェック→プッシュ通知の流れを確認
 4. GitHub Actionsで `workflow_dispatch` を手動実行し、Secretsの設定が正しいか確認
