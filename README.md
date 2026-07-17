@@ -20,30 +20,32 @@ restock-radar/
 
 コード本体はローカルで書き終わっている。**VAPID鍵はネットワーク不要で生成済み**（`python worker/generate_vapid_keys.py`、`cryptography`パッケージのみで完結するためWi-Fi不要だった）。公開鍵は`web/app.js`の`VAPID_PUBLIC_KEY`に反映済み。秘密鍵は`worker/private_key.pem`と`worker/vapid_keys.local.txt`に保存済み（どちらも`.gitignore`済み、後述のSecrets設定で使う）。
 
+**Gitは別途インストール不要。Sourcetree同梱のgitを使ってローカルの`git init`・初回コミットまで完了済み**（`C:\Users\kazuya.tohara\AppData\Local\Atlassian\SourceTree\git_local\bin\git.exe`。PowerShellで使うにはこのフォルダをPATHに追加するか、Sourcetree GUIから直接操作する）。
+
 以下の**ネットワークが必要な作業が未着手**（会社Wi-Fi環境のため保留中）:
 
-1. Gitのインストール
+1. GitHubリポジトリの作成・公開（`git remote add` → `git push`）
 2. Python依存パッケージのインストール（`pip install -r worker/requirements.txt`）
 3. Supabaseプロジェクトの作成
-4. GitHubリポジトリの作成・公開
-5. Stripeの商品・決済リンク設定
-6. `send-test-notification` Edge Functionのデプロイ
+4. Stripeの商品・決済リンク設定
+5. `send-test-notification` Edge Functionのデプロイ
 
 ## セットアップ手順（Wi-Fiが使える環境で）
 
-### 1. Gitをインストール
+### 1. GitHubにリポジトリを作成してpush
 
-[git-scm.com](https://git-scm.com/) からWindows版をインストール。
+Gitは導入済み（Sourcetree同梱、`git init`・初回コミットも完了済み）。GitHubで**public**リポジトリを作成し、リモートを追加してpushするだけでよい。
 
 ```powershell
-cd "restock-radar"
-git init
-git add -A
-git commit -m "Initial commit"
+$env:PATH = "C:\Users\kazuya.tohara\AppData\Local\Atlassian\SourceTree\git_local\bin;" + $env:PATH
+git remote add origin <GitHubで作成したリポジトリのURL>
+git branch -M main
+git push -u origin main
 ```
 
-GitHubで**public**リポジトリを作成し、`git remote add origin <URL>` → `git push -u origin main`。
-（publicにする理由: GitHub ActionsのCI時間が無料枠無制限になるため。ワーカーのコード自体に機密情報は含まれない。秘密情報はすべてGitHub Secretsで管理する。）
+（Sourcetree GUIから「リモートを追加」→「プッシュ」で操作しても同じ。GUIの方が楽ならそちらを使う。）
+
+publicにする理由: GitHub ActionsのCI時間が無料枠無制限になるため。ワーカーのコード自体に機密情報は含まれない。秘密情報はすべてGitHub Secretsで管理する。
 
 ### 2. Python依存パッケージのインストール
 
