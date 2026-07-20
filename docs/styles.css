@@ -130,7 +130,7 @@ header.app-header p {
   gap: 8px;
 }
 
-.add-form input[type="url"] {
+.add-form input[type="text"] {
   flex: 1;
   min-width: 0;
   background: var(--surface-raised);
@@ -141,11 +141,11 @@ header.app-header p {
   font-size: 0.95rem;
 }
 
-.add-form input[type="url"]::placeholder {
+.add-form input[type="text"]::placeholder {
   color: var(--text-dim);
 }
 
-.add-form input[type="url"]:focus,
+.add-form input[type="text"]:focus,
 button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
