@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-import logging
-
 from .base import Parser, StockResult, extract_json_ld_stock, soup_of
 from .generic_fallback import GenericFallbackParser
-
-logger = logging.getLogger("restock-radar-worker")
 
 _NEGATIVE_AVAILABILITY_SIGNALS = ["在庫切れ", "現在お取り扱いできません", "販売、発送は行っておりません"]
 _POSITIVE_AVAILABILITY_SIGNALS = ["在庫あり", "残り", "通常配送無料"]
@@ -36,18 +32,6 @@ class AmazonParser(Parser):
                 return StockResult(status="sold_out", product_name=_product_name(soup))
             if any(signal in text for signal in _POSITIVE_AVAILABILITY_SIGNALS):
                 return StockResult(status="in_stock", product_name=_product_name(soup))
-
-        # TEMPORARY diagnostic (remove once the Amazon "unknown"
-        # investigation is resolved): logs why this page fell through to
-        # the generic fallback, since GitHub Actions' fetch of the same URL
-        # has been producing "unknown" where a manual fetch succeeds.
-        logger.info(
-            "amazon parse fallthrough: html_len=%d has_availability_el=%s availability_text=%r html_snippet=%r",
-            len(html),
-            availability is not None,
-            availability.get_text(separator=" ").strip()[:200] if availability is not None else None,
-            html[:500],
-        )
 
         return _fallback.parse(html)
 
