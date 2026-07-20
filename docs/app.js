@@ -466,7 +466,10 @@ async function handleUpgradeReturn() {
 
 async function main() {
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.js").catch((err) => console.error(err));
+    navigator.serviceWorker
+      .register("./service-worker.js")
+      .then((registration) => registration.update())
+      .catch((err) => console.error(err));
   }
 
   await ensureSignedIn();

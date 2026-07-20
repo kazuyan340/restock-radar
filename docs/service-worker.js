@@ -1,4 +1,4 @@
-const CACHE = "restock-radar-shell-v2";
+const CACHE = "restock-radar-shell-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -24,7 +24,13 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+  // cache: "no-store" bypasses the browser's own HTTP cache (GitHub Pages
+  // sends Cache-Control: max-age=600), not just this cache-storage layer —
+  // without it, users could see a stale app for up to 10 minutes after
+  // every deploy even though this handler is already "network-first."
+  event.respondWith(
+    fetch(event.request, { cache: "no-store" }).catch(() => caches.match(event.request))
+  );
 });
 
 self.addEventListener("push", (event) => {
