@@ -9,7 +9,11 @@ const VAPID_PUBLIC_KEY = "BPSyum_Fd4i8fxvwQ0u-OAkVI7ralCHqXMUCPQtnHEtqpP9cqwAmcF
 const STRIPE_PAYMENT_LINK_URL = "https://buy.stripe.com/test_14A9AV5S7bmQ1oX64m14400";
 const FREE_TIER_LIMIT = 3;
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Named supabaseClient (not "supabase") because the CDN bundle's UMD build
+// declares a top-level `var supabase = ...` itself; a `const supabase = ...`
+// here would collide with that global and throw "Identifier 'supabase' has
+// already been declared" at parse time.
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // site_type must stay in sync with worker/dispatcher.py's
 // _HOST_SUFFIX_TO_SITE_TYPE and the DB check constraint in
@@ -89,11 +93,11 @@ function formatCheckedAt(iso) {
 // --- Auth / device bootstrap ----------------------------------------------
 
 async function ensureSignedIn() {
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData } = await supabaseClient.auth.getSession();
   let user = sessionData.session?.user ?? null;
 
   if (!user) {
-    const { data, error } = await supabase.auth.signInAnonymously();
+    const { data, error } = await supabaseClient.auth.signInAnonymously();
     if (error) throw error;
     user = data.user;
   }
@@ -101,7 +105,7 @@ async function ensureSignedIn() {
 
   // RLS's devices_insert_own policy requires id = auth.uid(), so it must be
   // passed explicitly rather than relying on the column default.
-  const { data: device, error: upsertError } = await supabase
+  const { data: device, error: upsertError } = await supabaseClient
     .from("devices")
     .upsert({ id: user.id }, { onConflict: "id", ignoreDuplicates: true })
     .select()
@@ -112,7 +116,7 @@ async function ensureSignedIn() {
   if (device) {
     currentDevice = device;
   } else {
-    const { data: existing, error: fetchError } = await supabase
+    const { data: existing, error: fetchError } = await supabaseClient
       .from("devices")
       .select()
       .eq("id", user.id)
@@ -125,7 +129,7 @@ async function ensureSignedIn() {
 // --- Items -----------------------------------------------------------------
 
 async function fetchItems() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("watched_items")
     .select("*")
     .eq("is_active", true)
@@ -240,7 +244,7 @@ async function addItem(rawUrl) {
     return;
   }
 
-  const { error } = await supabase.from("watched_items").insert({
+  const { error } = await supabaseClient.from("watched_items").insert({
     device_id: currentUser.id,
     url: url.toString(),
     normalized_url: normalizeUrl(url.toString()),
@@ -264,7 +268,7 @@ async function addItem(rawUrl) {
 }
 
 async function deleteItem(itemId) {
-  const { error } = await supabase.from("watched_items").delete().eq("id", itemId);
+  const { error } = await supabaseClient.from("watched_items").delete().eq("id", itemId);
   if (error) {
     showToast("削除に失敗しました");
     console.error(error);
@@ -311,7 +315,7 @@ async function sendTestNotification() {
   const button = document.getElementById("test-notify-button");
   button.disabled = true;
   try {
-    const { data, error } = await supabase.functions.invoke("send-test-notification");
+    const { data, error } = await supabaseClient.functions.invoke("send-test-notification");
     if (error || data?.error) {
       showToast("テスト通知の送信に失敗しました");
       console.error(error || data?.error);
@@ -347,7 +351,7 @@ async function enablePushNotifications() {
     });
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from("devices")
     .update({
       web_push_subscription: subscription.toJSON(),
@@ -369,7 +373,7 @@ async function enablePushNotifications() {
 // --- Notification history --------------------------------------------------
 
 async function fetchNotificationHistory() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("notifications")
     .select("*")
     .order("sent_at", { ascending: false })
@@ -433,7 +437,7 @@ async function handleUpgradeReturn() {
   // The Stripe webhook may take a couple seconds to land, so poll briefly.
   for (let attempt = 0; attempt < 5; attempt++) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    const { data } = await supabase.from("devices").select().eq("id", currentUser.id).single();
+    const { data } = await supabaseClient.from("devices").select().eq("id", currentUser.id).single();
     if (data?.is_premium) {
       currentDevice = data;
       showToast("プレミアムへのアップグレードが完了しました");

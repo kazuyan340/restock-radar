@@ -1,4 +1,4 @@
-const CACHE = "restock-radar-shell-v1";
+const CACHE = "restock-radar-shell-v2";
 const SHELL = [
   "./",
   "./index.html",

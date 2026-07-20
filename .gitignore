@@ -14,3 +14,9 @@ venv/
 # supabase local dev
 supabase/.branches/
 supabase/.temp/
+
+# locally downloaded tools (Supabase CLI binary etc.)
+.tools/
+
+# local work log (may reference business strategy notes, not for the public repo)
+作業.md
