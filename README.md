@@ -19,6 +19,18 @@ restock-radar/
 
 技術選定の背景や検討過程は `C:\Users\kazuya.tohara\.claude\plans\woolly-orbiting-wirth.md` を参照。
 
+## 対応サイト
+
+| サイト | 状況 |
+|---|---|
+| Amazon | ✅ 対応（専用パーサー、`worker/parsers/amazon.py`） |
+| 楽天市場 | ✅ 対応（汎用判定: JSON-LD優先、キーワードフォールバック） |
+| Yahoo!ショッピング / SNKRDUNK / ZOZOTOWN | 🟡 site_typeとしては認識するが専用パーサー未実装（汎用判定で動く可能性はあるが未検証） |
+| タカラトミーモール（takaratomymall.jp） | ❌ 非対応。Akamaiのボット対策により全リクエストがタイムアウトし、応答が一切返らない（ヘッダー変更・60秒待機でも突破不可） |
+| その他一般サイト | 🟡 ベストエフォート（JSON-LDまたは在庫関連キーワードがあれば判定可能。Cloudflare/Akamai等の強いボット対策があるサイトは同様の理由で非対応になりやすい） |
+
+登録自体はどのサイトのURLでもできるが、非対応サイトは「取得エラー」のまま表示される（誤って「在庫あり」と通知することはない設計）。
+
 ## 現在の状態
 
 コード本体はローカルで書き終わっている。**VAPID鍵はネットワーク不要で生成済み**（`python worker/generate_vapid_keys.py`、`cryptography`パッケージのみで完結するためWi-Fi不要だった）。公開鍵は`docs/app.js`の`VAPID_PUBLIC_KEY`に反映済み。秘密鍵は`worker/private_key.pem`と`worker/vapid_keys.local.txt`に保存済み（どちらも`.gitignore`済み、後述のSecrets設定で使う）。
