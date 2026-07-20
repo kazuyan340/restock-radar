@@ -55,6 +55,14 @@ function detectSiteType(url) {
   return "generic";
 }
 
+// Rakuten/Amazon/etc. "share" functions copy product name + other text
+// alongside the URL (e.g. "【楽天市場】商品名 https://item.rakuten.co.jp/...").
+// Pull just the URL out so users can paste the whole shared text as-is.
+function extractUrl(text) {
+  const match = text.match(/https?:\/\/\S+/);
+  return match ? match[0] : null;
+}
+
 function normalizeUrl(url) {
   const u = new URL(url);
   u.hash = "";
@@ -229,10 +237,16 @@ async function refreshItems() {
   return items;
 }
 
-async function addItem(rawUrl) {
+async function addItem(rawInput) {
+  const extracted = extractUrl(rawInput);
+  if (!extracted) {
+    showToast("URLが見つかりませんでした");
+    return;
+  }
+
   let url;
   try {
-    url = new URL(rawUrl);
+    url = new URL(extracted);
   } catch {
     showToast("URLの形式が正しくありません");
     return;
