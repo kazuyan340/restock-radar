@@ -24,7 +24,7 @@ class StockResult:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=2, max=15))
-def fetch_html(url: str, timeout: float = 10.0) -> str:
+def fetch_html(url: str, timeout: float = 25.0) -> str:
     response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
     response.raise_for_status()
     return response.text
