@@ -12,8 +12,24 @@ StockStatus = Literal["in_stock", "sold_out", "unknown"]
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36 restock-radar/1.0"
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
+
+# A bare User-Agent is a common bot-detection tripwire — real browsers send
+# a full header set on every navigation. Some sites (observed with Amazon
+# from GitHub Actions' cloud IPs) serve a stripped-down page missing
+# availability info to requests that look automated, without an outright
+# block; this brings the request closer to what a real browser sends.
+DEFAULT_HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+}
 
 
 @dataclass
@@ -25,7 +41,7 @@ class StockResult:
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=2, max=15))
 def fetch_html(url: str, timeout: float = 25.0) -> str:
-    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
+    response = requests.get(url, headers=DEFAULT_HEADERS, timeout=timeout)
     response.raise_for_status()
     return response.text
 
