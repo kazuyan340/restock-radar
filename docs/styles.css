@@ -68,11 +68,56 @@ header.app-header p {
   font-size: 0.9rem;
 }
 
-.history-link {
-  align-self: flex-start;
+.header-links {
+  display: flex;
+  gap: 8px;
   margin-top: 6px;
+}
+
+.header-links button {
   padding: 6px 10px;
   font-size: 0.8rem;
+}
+
+.site-status-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.site-status-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.dot.working {
+  background: var(--success);
+}
+
+.dot.blocked {
+  background: var(--danger);
+}
+
+.dot.unknown {
+  background: var(--warning);
+}
+
+.site-status-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
 }
 
 .history-header {
@@ -114,8 +159,13 @@ header.app-header p {
   color: var(--text-dim);
 }
 
-.site-precision.dedicated {
-  color: var(--accent);
+.site-precision.working {
+  color: var(--success);
+}
+
+.site-precision.blocked {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 .card {

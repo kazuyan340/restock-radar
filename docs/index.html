@@ -15,8 +15,24 @@
     <header class="app-header">
       <h1>🔔 在庫レーダー</h1>
       <p>売り切れ商品が復活したら、すぐにお知らせします</p>
-      <button class="ghost history-link" id="history-toggle-button">📜 通知履歴を見る</button>
+      <div class="header-links">
+        <button class="ghost" id="history-toggle-button">📜 通知履歴を見る</button>
+        <button class="ghost" id="sites-toggle-button">🌐 対応サイトを見る</button>
+      </div>
     </header>
+
+    <section class="card" id="sites-section" hidden>
+      <div class="history-header">
+        <h2>対応サイト状況</h2>
+        <button class="ghost" id="close-sites-button">閉じる</button>
+      </div>
+      <ul class="site-status-list">
+        <li><span class="dot working"></span>楽天市場・Yahoo!ショッピング・SNKRDUNK — 動作確認済み</li>
+        <li><span class="dot blocked"></span>Amazon・ZOZOTOWN — 現在ブロックされていて取得できません</li>
+        <li><span class="dot unknown"></span>その他のサイト — ベストエフォート（サイトによります）</li>
+      </ul>
+      <p class="site-status-note">ブロック中のサイトも改善に取り組んでいます。登録自体はできますが、誤って「在庫あり」と通知することはありません。</p>
+    </section>
 
     <form class="card add-form" id="add-form">
       <input

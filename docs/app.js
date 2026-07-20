@@ -35,12 +35,17 @@ const STATUS_LABEL = {
   error: "取得エラー",
 };
 
-// Sites with an actual dedicated parser in worker/dispatcher.py's _PARSERS
-// dict (currently only Amazon — rakuten/yahoo_shopping/snkrdunk/zozotown are
-// recognized site_types but still run through GenericFallbackParser today).
-// Keep this list in sync as worker/parsers/*.py gains more dedicated
-// parsers, so the UI never overclaims precision it doesn't actually have.
-const SITES_WITH_DEDICATED_PARSER = ["amazon"];
+// Based on actually running the worker from GitHub Actions (2026-07-20
+// investigation, see README "対応サイト" table) — NOT just "has a dedicated
+// parser." Amazon has one but is bot-blocked from GitHub Actions' shared
+// cloud IPs (returns a robot-check page, not the real product page), while
+// Rakuten/Yahoo!/SNKRDUNK have no dedicated parser yet but are confirmed
+// reachable. Precision here tracks real-world outcome, not code structure,
+// so the UI never overclaims (or underclaims) what actually works today.
+// Update these two lists if the self-hosted-runner IP change (see 作業.md)
+// changes which sites are reachable.
+const SITES_CONFIRMED_WORKING = ["rakuten", "yahoo_shopping", "snkrdunk"];
+const SITES_CONFIRMED_BLOCKED = ["amazon", "zozotown"];
 
 let currentUser = null;
 let currentDevice = null;
@@ -216,9 +221,20 @@ function renderItemCard(item) {
   meta.append(badge, checked);
 
   const precision = document.createElement("div");
-  const isDedicated = SITES_WITH_DEDICATED_PARSER.includes(item.site_type);
-  precision.className = `site-precision ${isDedicated ? "dedicated" : ""}`;
-  precision.textContent = isDedicated ? "🎯 専用ロジックで高精度判定" : "🔍 キーワード判定（ベストエフォート）";
+  let precisionClass;
+  let precisionText;
+  if (SITES_CONFIRMED_BLOCKED.includes(item.site_type)) {
+    precisionClass = "blocked";
+    precisionText = "⚠️ 現在ブロックされていて取得できません";
+  } else if (SITES_CONFIRMED_WORKING.includes(item.site_type)) {
+    precisionClass = "working";
+    precisionText = "✅ 動作確認済み";
+  } else {
+    precisionClass = "";
+    precisionText = "🔍 ベストエフォート（未検証）";
+  }
+  precision.className = `site-precision ${precisionClass}`;
+  precision.textContent = precisionText;
 
   body.append(name, url, meta, precision);
 
@@ -499,6 +515,16 @@ async function main() {
   document.getElementById("paywall-close-button").addEventListener("click", closePaywall);
   document.getElementById("history-toggle-button").addEventListener("click", toggleHistory);
   document.getElementById("close-history-button").addEventListener("click", toggleHistory);
+  document.getElementById("sites-toggle-button").addEventListener("click", toggleSites);
+  document.getElementById("close-sites-button").addEventListener("click", toggleSites);
+}
+
+function toggleSites() {
+  const section = document.getElementById("sites-section");
+  section.hidden = !section.hidden;
+  if (!section.hidden) {
+    section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
 }
 
 main().catch((err) => {
