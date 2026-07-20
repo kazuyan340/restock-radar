@@ -42,10 +42,11 @@ class AmazonParser(Parser):
         # the generic fallback, since GitHub Actions' fetch of the same URL
         # has been producing "unknown" where a manual fetch succeeds.
         logger.info(
-            "amazon parse fallthrough: html_len=%d has_availability_el=%s availability_text=%r",
+            "amazon parse fallthrough: html_len=%d has_availability_el=%s availability_text=%r html_snippet=%r",
             len(html),
             availability is not None,
             availability.get_text(separator=" ").strip()[:200] if availability is not None else None,
+            html[:500],
         )
 
         return _fallback.parse(html)
